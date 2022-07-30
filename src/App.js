@@ -17,6 +17,9 @@ import Button from "@mui/material/Button";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import TextField from "@mui/material/TextField";
+import Slider from "@mui/material/Slider";
+import Pagination from "@mui/material/Pagination";
 
 // icons
 import SearchIcon from "@mui/icons-material/Search";
@@ -42,6 +45,7 @@ import { ArrowForwardIosSharp } from "@mui/icons-material";
 function App() {
   const [open, setOpen] = React.useState(false);
   const [openUser, setOpenUser] = React.useState(false);
+  const [productViewState, setProductViewState] = React.useState(true);
 
   const anchorRef = React.useRef(null);
   const anchorRefUser = React.useRef(null);
@@ -117,6 +121,36 @@ function App() {
       setExpand(false);
     }
   };
+
+  const [priceRange, setPriceRange] = React.useState([20, 37]);
+
+  const filterPriceRangeHandler = (event, newValue) => {
+    setPriceRange(newValue);
+  };
+
+  function priceRangeText(value) {
+    return `${value}`;
+  }
+
+  // pagination
+  const [productPerPage, setProductPerPage] = React.useState(12);
+  const [page, setPage] = React.useState(1);
+  const paginationHandler = (event, value) => {
+    setPage(value);
+  };
+
+  // product view handler
+  const changeProductViewHandler = (type) => {
+    console.log("change Product View Handler ::", type);
+
+    if (type === "product-grid") {
+      setProductViewState(true);
+    } else {
+      setProductViewState(false);
+    }
+  };
+
+  console.log("productViewState ::", productViewState);
 
   return (
     <>
@@ -346,13 +380,17 @@ function App() {
               }}
             >
               <Box sx={{ px: "10px" }}>
-                <GridViewIcon />
+                <GridViewIcon
+                  onClick={() => changeProductViewHandler("product-grid")}
+                />
               </Box>
 
               <Divider orientation="vertical" variant="middle" flexItem />
 
               <Box sx={{ px: "10px" }}>
-                <FormatListBulletedIcon />
+                <FormatListBulletedIcon
+                  onClick={() => changeProductViewHandler("product-list")}
+                />
               </Box>
 
               <Divider orientation="vertical" variant="middle" flexItem />
@@ -380,9 +418,14 @@ function App() {
 
           {/* filter and main products   */}
           <Grid container>
-            <Grid item xs={12} sm={3} sx={{ border: "1px solid salmon" }}>
+            <Grid
+              item
+              xs={12}
+              sm={3}
+              sx={{ border: "1px solid salmon" }}
+            >
               {/* category filter  */}
-              <Box>
+              <Box sx={{ borderBottom: "2px solid blue" }}>
                 <Accordion expanded={expand}>
                   <AccordionSummary
                     aria-controls="panel1a-content"
@@ -413,7 +456,9 @@ function App() {
                     )}
                   </AccordionSummary>
 
-                  <AccordionDetails sx={{ backgroundColor: "lightgray",p: "0px" }}>
+                  <AccordionDetails
+                    sx={{ backgroundColor: "lightgray", p: "0px" }}
+                  >
                     <List>
                       <ListItem>
                         <ListItemText
@@ -455,9 +500,58 @@ function App() {
               </Box>
 
               {/* price filter  */}
+              {/* input price  */}
+              <Box sx={{ padding: "20px" }}>
+                <Stack
+                  component="form"
+                  sx={{
+                    width: "25ch",
+                  }}
+                  direction="row"
+                  spacing={2}
+                  autoComplete="off"
+                >
+                  <TextField
+                    hiddenLabel
+                    id="filled-hidden-label-small"
+                    // defaultValue="0"
+                    size="small"
+                    placeholder="low price"
+                    sx={{
+                      [`& fieldset`]: {
+                        borderRadius: 20,
+                      },
+                    }}
+                  />
+                  <TextField
+                    hiddenLabel
+                    id="filled-hidden-label-normal"
+                    // defaultValue="1"
+                    size="small"
+                    placeholder="high price"
+                    sx={{
+                      [`& fieldset`]: {
+                        borderRadius: 20,
+                      },
+                    }}
+                  />
+                </Stack>
+                <Stack sx={{ mt: "30px" }}>
+                  <Slider
+                    getAriaLabel={() => "Price range"}
+                    value={priceRange}
+                    onChange={filterPriceRangeHandler}
+                    valueLabelDisplay="auto"
+                    getAriaValueText={priceRangeText}
+                  />
+                </Stack>
+              </Box>
+
+              {/* range price  */}
               <Box></Box>
             </Grid>
 
+            {/* products container  */}
             <Grid
               item
               container
@@ -467,28 +561,44 @@ function App() {
             >
               <Grid
                 item
-                xs={4}
+                xs={productViewState ? 4 : 12}
                 sx={{ border: "1px solid salmon", minHeight: "250px" }}
               >
                 product 1
               </Grid>
-              <Grid item xs={4} sx={{ border: "1px solid palegreen" }}>
+              <Grid
+                item
+                xs={productViewState ? 4 : 12}
+                sx={{ border: "1px solid palegreen", minHeight: "250px" }}
+              >
                 product 2
               </Grid>
-              <Grid item xs={4} sx={{ border: "1px solid salmon" }}>
+              <Grid
+                item
+                xs={productViewState ? 4 : 12}
+                sx={{ border: "1px solid salmon", minHeight: "250px" }}
+              >
                 product 3
               </Grid>
               <Grid
                 item
-                xs={4}
+                xs={productViewState ? 4 : 12}
                 sx={{ border: "1px solid salmon", minHeight: "250px" }}
               >
                 product 4
               </Grid>
-              <Grid item xs={4} sx={{ border: "1px solid salmon" }}>
+              <Grid
+                item
+                xs={productViewState ? 4 : 12}
+                sx={{ border: "1px solid salmon", minHeight: "250px" }}
+              >
                 product 5
               </Grid>
-              <Grid item xs={4} sx={{ border: "1px solid salmon" }}>
+              <Grid
+                item
+                xs={productViewState ? 4 : 12}
+                sx={{ border: "1px solid salmon", minHeight: "250px" }}
+              >
                 product 6
               </Grid>
             </Grid>
@@ -499,14 +609,20 @@ function App() {
             <Grid item xs={3} sx={{ border: "1px solid salmon" }}>
               option 1
             </Grid>
-            <Grid item xs={3} sx={{ border: "1px solid palegreen" }}>
-              option 2
+
+            <Grid item xs={6} sx={{ border: "1px solid palegreen" }}>
+              <Stack spacing={2} sx={{ py: "10px" }}>
+                <Pagination
+                  count={Math.ceil(100 / productPerPage)}
+                  page={page}
+                  onChange={paginationHandler}
+                  variant="outlined"
+                  shape="rounded"
+                />
+              </Stack>
             </Grid>
             <Grid item xs={3} sx={{ border: "1px solid palegreen" }}>
               option 3
-            </Grid>
-            <Grid item xs={3} sx={{ border: "1px solid palegreen" }}>
-              option 4
             </Grid>
           </Grid>
         </Box>
