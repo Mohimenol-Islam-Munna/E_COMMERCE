@@ -662,7 +662,7 @@ const App = () => {
                         >
                           <Box
                             sx={{
-                              width: "90%",
+                              width: "100%",
                               overflow: "hidden",
                               height: "250px",
                               p: "5px",
