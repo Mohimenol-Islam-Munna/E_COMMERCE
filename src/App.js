@@ -1,5 +1,4 @@
 import React from "react";
-import "./App.css";
 
 // mui components
 import Box from "@mui/material/Box";
@@ -27,6 +26,9 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 
 // components
 import SharedMenu from "./components/SharedMenu";
+
+// css 
+import "./App.css";
 
 function App() {
   const [open, setOpen] = React.useState(false);
