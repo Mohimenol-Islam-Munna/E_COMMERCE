@@ -14,6 +14,7 @@ const SharedMenu = ({
   anchorRef,
   handleClose,
   handleListKeyDown,
+  menuItemClickHandler,
 }) => {
   return (
     <>
@@ -44,14 +45,17 @@ const SharedMenu = ({
                 >
                   {items?.map((item, index) => (
                     <MenuItem
+                      key={index}
                       sx={{
                         "&::before, &::after": {
-                          borderColor: "red",
                           display: "none",
                         },
+                        fontSize: "16px",
+                        backgroundColor: "lightgray",
                         p: "3px 15px",
                         textAlign: "center",
                       }}
+                      onClick={() => menuItemClickHandler(item)}
                     >
                       {item}
                     </MenuItem>

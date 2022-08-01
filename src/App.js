@@ -45,6 +45,7 @@ import SharedMenu from "./components/SharedMenu";
 import useAllProducts from "./fetchData/useAllProducts";
 import useAllCategory from "./fetchData/useAllCategory";
 
+// baseUrl
 import { baseUrl } from "./fetchData/baseUrl";
 
 // css
@@ -53,6 +54,8 @@ import "./App.css";
 const App = () => {
   const [open, setOpen] = useState(false);
   const [openUser, setOpenUser] = useState(false);
+  const [openCount, setOpenCount] = useState(false);
+  const [openSort, setOpenSort] = useState(false);
   const [mainProductState, setMainProductState] = useState(null);
   const [productViewState, setProductViewState] = useState(true);
   const [maxPriceProduct, setMaxPriceProduct] = useState(null);
@@ -60,6 +63,7 @@ const App = () => {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [lowPrice, setLowPrice] = useState(0);
   const [highPrice, setHighPrice] = useState(0);
+  const [selectShowProduct] = useState([3, 6, 9, 12, 15, 18, 21, 24, 27, 30]);
 
   const [perCategoryProductsLoading, setPerCategoryProductsLoading] =
     useState(false);
@@ -71,6 +75,9 @@ const App = () => {
 
   const anchorRef = useRef(null);
   const anchorRefUser = useRef(null);
+  const anchorRefCount = useRef(null);
+  const anchorRefSort = useRef(null);
+  const anchorRefShowProductCount = useRef(null);
 
   // fetch all products
   const { allProductsLoading, allProducts, allProductsError } =
@@ -82,8 +89,6 @@ const App = () => {
 
   // product per category handler
   const perCategoryProductsHandler = async (name) => {
-    console.log("perCategoryProductsHandler ::", name);
-
     setPerCategoryProductsLoading(true);
 
     try {
@@ -139,6 +144,14 @@ const App = () => {
     setOpenUser((prevOpenUser) => !prevOpenUser);
   };
 
+  const handleToggleCount = () => {
+    setOpenCount((prevOpenCount) => !prevOpenCount);
+  };
+
+  const handleToggleSort = () => {
+    setOpenSort((prevOpenSort) => !prevOpenSort);
+  };
+
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
       return;
@@ -153,6 +166,25 @@ const App = () => {
     }
 
     setOpenUser(false);
+  };
+
+  const handleCloseCount = (event) => {
+    if (
+      anchorRefCount.current &&
+      anchorRefCount.current.contains(event.target)
+    ) {
+      return;
+    }
+
+    setOpenCount(false);
+  };
+
+  const handleCloseSort = (event) => {
+    if (anchorRefSort.current && anchorRefSort.current.contains(event.target)) {
+      return;
+    }
+
+    setOpenSort(false);
   };
 
   function handleListKeyDown(event) {
@@ -173,9 +205,47 @@ const App = () => {
     }
   }
 
+  function handleListKeyDownCount(event) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setOpenCount(false);
+    } else if (event.key === "Escape") {
+      setOpenCount(false);
+    }
+  }
+
+  function handleListKeyDownSort(event) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setOpenSort(false);
+    } else if (event.key === "Escape") {
+      setOpenSort(false);
+    }
+  }
+
+  // product sort menu handler
+  const productSortHandler = async (value) => {
+    console.log("productSortHandler ::", value);
+
+    if (value === "Desc") {
+      try {
+        let res = await axios.get(`${baseUrl}/products?sort=desc`);
+        setMainProductState(res);
+      } catch (err) {
+        console.log("productSortHandler :error:", err);
+      } finally {
+        console.log("productSortHandler :finally:");
+      }
+    } else {
+      setMainProductState(allProducts);
+    }
+  };
+
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
   const prevOpenUser = useRef(openUser);
+  const prevOpenCount = useRef(openCount);
+  const prevOpenSort = useRef(openSort);
 
   useEffect(() => {
     if (prevOpen.current === true && open === false) {
@@ -190,8 +260,24 @@ const App = () => {
       anchorRefUser.current.focus();
     }
 
-    prevOpenUser.current = open;
+    prevOpenUser.current = openUser;
   }, [setOpenUser]);
+
+  useEffect(() => {
+    if (prevOpenCount.current === true && open === false) {
+      anchorRefCount.current.focus();
+    }
+
+    prevOpenCount.current = openCount;
+  }, [setOpenCount]);
+
+  useEffect(() => {
+    if (prevOpenSort.current === true && open === false) {
+      anchorRefUser.current.focus();
+    }
+
+    prevOpenSort.current = openSort;
+  }, [setOpenSort]);
 
   // filter category accordion
   const [expand, setExpand] = useState(true);
@@ -295,8 +381,8 @@ const App = () => {
             sx={{ color: "white" }}
             ref={anchorRefUser}
             id="composition-button-user"
-            aria-controls={open ? "composition-menu" : undefined}
-            aria-expanded={open ? "true" : undefined}
+            aria-controls={openUser ? "composition-menu" : undefined}
+            aria-expanded={openUser ? "true" : undefined}
             aria-haspopup="true"
             onClick={handleToggleUser}
           />
@@ -477,16 +563,33 @@ const App = () => {
                         px: "10px",
                         display: "flex",
                         alignItems: "center",
-
                         flexGrow: 1,
                       }}
                     >
                       <Typography sx={{ px: "10px", flexGrow: 1 }}>
                         Short By Price
                       </Typography>
-                      <IconButton aria-label="short price">
+                      <IconButton
+                        aria-label="short price"
+                        ref={anchorRefSort}
+                        id="composition-button-sort"
+                        aria-controls={
+                          openSort ? "composition-menu" : undefined
+                        }
+                        aria-expanded={openSort ? "true" : undefined}
+                        aria-haspopup="true"
+                        onClick={handleToggleSort}
+                      >
                         <ArrowDropDownIcon />
                       </IconButton>
+                      <SharedMenu
+                        items={["Asc", "Desc"]}
+                        open={openSort}
+                        anchorRef={anchorRefSort}
+                        handleClose={handleCloseSort}
+                        handleListKeyDown={handleListKeyDownSort}
+                        menuItemClickHandler={productSortHandler}
+                      />
                     </Box>
                   </Grid>
 
@@ -507,9 +610,30 @@ const App = () => {
                       <Typography sx={{ px: "10px", flexGrow: 1 }}>
                         Show Max : {productPerPage}
                       </Typography>
-                      <IconButton aria-label="short price">
+                      <IconButton
+                        aria-label="show maximum product"
+                        ref={anchorRefCount}
+                        id="composition-button-count"
+                        aria-controls={
+                          openCount ? "composition-menu" : undefined
+                        }
+                        aria-expanded={openCount ? "true" : undefined}
+                        aria-haspopup="true"
+                        onClick={handleToggleCount}
+                      >
                         <ArrowDropDownIcon />
                       </IconButton>
+
+                      <SharedMenu
+                        items={selectShowProduct}
+                        open={openCount}
+                        anchorRef={anchorRefCount}
+                        handleClose={handleCloseCount}
+                        handleListKeyDown={handleListKeyDownCount}
+                        menuItemClickHandler={(value) => {
+                          setProductPerPage(value);
+                        }}
+                      />
                     </Box>
                   </Grid>
 
