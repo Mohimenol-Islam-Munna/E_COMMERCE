@@ -58,6 +58,8 @@ const App = () => {
   const [maxPriceProduct, setMaxPriceProduct] = useState(null);
   const [minPriceProduct, setMinPriceProduct] = useState(null);
   const [priceRange, setPriceRange] = useState([0, 100]);
+  const [lowPrice, setLowPrice] = useState(0);
+  const [highPrice, setHighPrice] = useState(0);
 
   const [perCategoryProductsLoading, setPerCategoryProductsLoading] =
     useState(false);
@@ -78,14 +80,10 @@ const App = () => {
   const { allCategoryLoading, allCategory, allCategoryError } =
     useAllCategory();
 
-  // console.log("perCategoryProductsLoading ::", perCategoryProductsLoading);
-  // console.log("perCategoryProductsError ::", perCategoryProductsError);
-  // console.log("perCategoryProducts ::", perCategoryProducts);
-  // console.log("perCategoryProducts ::", perCategoryProducts);
-  // console.log("mainProductState ::", mainProductState);
-
   // product per category handler
   const perCategoryProductsHandler = async (name) => {
+    console.log("perCategoryProductsHandler ::", name);
+
     setPerCategoryProductsLoading(true);
 
     try {
@@ -127,6 +125,8 @@ const App = () => {
         setPriceRange((prevData) => {
           return [Math.floor(min?.price), Math.ceil(max?.price)];
         });
+        setLowPrice(Math.floor(min?.price));
+        setHighPrice(Math.ceil(max?.price));
       }
     }
   }, [allProducts]);
@@ -208,8 +208,6 @@ const App = () => {
   function priceRangeText(value) {
     return `${value}`;
   }
-
-  console.log("mainProductState :price range:", priceRange);
 
   // product price range handler
   const productsPriceRangeHandler = (event, newValue) => {
@@ -660,8 +658,23 @@ const App = () => {
                         <TextField
                           hiddenLabel
                           id="filled-hidden-label-small"
-                          // defaultValue="0"
+                          type="number"
+                          value={lowPrice}
                           size="small"
+                          onChange={(e) => {
+                            setMainProductState((prevState) => {
+                              if (e.target.value.length > 0) {
+                                return {
+                                  data: allProducts?.data?.filter(
+                                    (product) => product.price >= e.target.value
+                                  ),
+                                };
+                              } else {
+                                return allProducts;
+                              }
+                            });
+                            setLowPrice(e.target.value);
+                          }}
                           placeholder="low price"
                           sx={{
                             [`& fieldset`]: {
@@ -672,9 +685,24 @@ const App = () => {
                         <TextField
                           hiddenLabel
                           id="filled-hidden-label-normal"
-                          // defaultValue="1"
+                          type="number"
+                          value={highPrice}
                           size="small"
                           placeholder="high price"
+                          onChange={(e) => {
+                            setMainProductState((prevState) => {
+                              if (e.target.value.length > 0) {
+                                return {
+                                  data: allProducts?.data?.filter(
+                                    (product) => product.price <= e.target.value
+                                  ),
+                                };
+                              } else {
+                                return allProducts;
+                              }
+                            });
+                            setHighPrice(e.target.value);
+                          }}
                           sx={{
                             [`& fieldset`]: {
                               borderRadius: 20,
@@ -691,7 +719,7 @@ const App = () => {
                           min={0}
                           max={1600}
                           onChange={productsPriceRangeHandler}
-                          valueLabelDisplay="on"
+                          valueLabelDisplay="auto"
                           getAriaValueText={priceRangeText}
                         />
                       </Stack>
