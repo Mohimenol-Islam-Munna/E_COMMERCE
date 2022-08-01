@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
 // mui components
 import Box from "@mui/material/Box";
@@ -44,15 +45,27 @@ import SharedMenu from "./components/SharedMenu";
 import useAllProducts from "./fetchData/useAllProducts";
 import useAllCategory from "./fetchData/useAllCategory";
 
+import { baseUrl } from "./fetchData/baseUrl";
+
 // css
 import "./App.css";
 
 const App = () => {
   const [open, setOpen] = useState(false);
   const [openUser, setOpenUser] = useState(false);
+  const [mainProductState, setMainProductState] = useState(null);
   const [productViewState, setProductViewState] = useState(true);
   const [maxPriceProduct, setMaxPriceProduct] = useState(null);
   const [minPriceProduct, setMinPriceProduct] = useState(null);
+  const [priceRange, setPriceRange] = useState([0, 100]);
+
+  const [perCategoryProductsLoading, setPerCategoryProductsLoading] =
+    useState(false);
+  const [perCategoryProducts, setPerCategoryProducts] = useState(null);
+  const [perCategoryProductsError, setPerCategoryProductsError] =
+    useState(false);
+
+  const [categoryName, setCategoryName] = useState("all");
 
   const anchorRef = useRef(null);
   const anchorRefUser = useRef(null);
@@ -65,33 +78,58 @@ const App = () => {
   const { allCategoryLoading, allCategory, allCategoryError } =
     useAllCategory();
 
-  // console.log("allCategoryLoading ::", allCategoryLoading);
-  // console.log("allProducts ::", allProducts);
-  // console.log("allCategoryError ::", allCategoryError);
+  // console.log("perCategoryProductsLoading ::", perCategoryProductsLoading);
+  // console.log("perCategoryProductsError ::", perCategoryProductsError);
+  // console.log("perCategoryProducts ::", perCategoryProducts);
+  // console.log("perCategoryProducts ::", perCategoryProducts);
+  // console.log("mainProductState ::", mainProductState);
 
-  console.log("allProducts min :price new way:", minPriceProduct);
+  // product per category handler
+  const perCategoryProductsHandler = async (name) => {
+    setPerCategoryProductsLoading(true);
 
+    try {
+      let res = await axios.get(`${baseUrl}/products/category/${name}`);
+      setPerCategoryProducts(res);
+      setMainProductState(res);
+      setCategoryName(name);
+    } catch (err) {
+      setPerCategoryProductsError(true);
+    } finally {
+      setPerCategoryProductsLoading(false);
+    }
+  };
+
+  // update main product state
   useEffect(() => {
-    // get maximum price product
-    setMaxPriceProduct((prevData) => {
-      let maxPriceProduct = allProducts?.data?.reduce((prev, next) =>
-        prev.price > next.price ? prev : next
-      );
-
-      return maxPriceProduct;
-    });
-
-    // get minimum price product
-    setMinPriceProduct((prevData) => {
-      let maxPriceProduct = allProducts?.data?.reduce((prev, next) =>
+    if (allProducts?.data?.length > 0) {
+      // get minimum  price product
+      let min = allProducts?.data?.reduce((prev, next) =>
         prev.price < next.price ? prev : next
       );
 
-      return maxPriceProduct;
-    });
-  }, [allProducts]);
+      // get maximum price product
+      let max = allProducts?.data?.reduce((prev, next) =>
+        prev.price > next.price ? prev : next
+      );
 
-  console.log("allCategoryError ::", allCategoryError);
+      setMinPriceProduct((prevData) => {
+        return min;
+      });
+
+      setMaxPriceProduct((prevData) => {
+        return max;
+      });
+
+      setMainProductState(allProducts);
+
+      if (min?.price && max?.price) {
+        setPriceRange((prevData) => {
+          return [Math.floor(min?.price), Math.ceil(max?.price)];
+        });
+      }
+    }
+  }, [allProducts]);
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -166,15 +204,25 @@ const App = () => {
     }
   };
 
-  const [priceRange, setPriceRange] = useState([20, 37]);
-
-  const filterPriceRangeHandler = (event, newValue) => {
-    setPriceRange(newValue);
-  };
-
+  // filter price range
   function priceRangeText(value) {
     return `${value}`;
   }
+
+  console.log("mainProductState :price range:", priceRange);
+
+  // product price range handler
+  const productsPriceRangeHandler = (event, newValue) => {
+    setMainProductState((prevState) => {
+      return {
+        data: allProducts?.data?.filter(
+          (product) =>
+            product.price >= newValue[0] && product.price <= newValue[1]
+        ),
+      };
+    });
+    setPriceRange(newValue);
+  };
 
   // pagination
   const [productPerPage, setProductPerPage] = useState(6);
@@ -182,16 +230,12 @@ const App = () => {
 
   const [page, setPage] = useState(1);
   const paginationHandler = (event, value) => {
-    console.log("pagination handler :page value: ", value);
-
     setPage(value);
     setproductStartIndex((value - 1) * productPerPage);
   };
 
   // product view handler
   const changeProductViewHandler = (type) => {
-    console.log("change Product View Handler ::", type);
-
     if (type === "product-grid") {
       setProductViewState(true);
     } else {
@@ -282,7 +326,7 @@ const App = () => {
         </Box>
       </Box>
       {/* main  */}
-      <Box sx={{}}>
+      <Box>
         {/* category title  */}
         <Box
           sx={{
@@ -295,12 +339,17 @@ const App = () => {
             alignItems: "center",
           }}
         >
-          <Box>
+          <Box
+            sx={{
+              width: "85%",
+              mx: "auto",
+              maxWidth: "1500px",
+              textAlign: "left",
+              textTransform: "capitalize",
+            }}
+          >
             <Typography component="p">
-              Category Name Men's Life Style
-            </Typography>
-            <Typography>
-              Category &gt; Name Men's &gt; Life &gt; Style
+              Category Name : {categoryName}
             </Typography>
           </Box>
         </Box>
@@ -458,7 +507,7 @@ const App = () => {
                       }}
                     >
                       <Typography sx={{ px: "10px", flexGrow: 1 }}>
-                        Show : {productPerPage}
+                        Show Max : {productPerPage}
                       </Typography>
                       <IconButton aria-label="short price">
                         <ArrowDropDownIcon />
@@ -559,7 +608,12 @@ const App = () => {
                             >
                               <List>
                                 {allCategory?.data?.map((category, index) => (
-                                  <ListItem key={index}>
+                                  <ListItem
+                                    key={index}
+                                    onClick={() =>
+                                      perCategoryProductsHandler(category)
+                                    }
+                                  >
                                     <ListItemText
                                       key={index}
                                       primary={
@@ -592,8 +646,8 @@ const App = () => {
                     </Box>
 
                     {/* price filter  */}
-                    {/* input price  */}
                     <Box sx={{ padding: "20px" }}>
+                      {/* input price  */}
                       <Stack
                         component="form"
                         sx={{
@@ -628,24 +682,25 @@ const App = () => {
                           }}
                         />
                       </Stack>
+
+                      {/* range price  */}
                       <Stack sx={{ mt: "30px" }}>
                         <Slider
                           getAriaLabel={() => "Price range"}
                           value={priceRange}
-                          onChange={filterPriceRangeHandler}
-                          valueLabelDisplay="auto"
+                          min={0}
+                          max={1600}
+                          onChange={productsPriceRangeHandler}
+                          valueLabelDisplay="on"
                           getAriaValueText={priceRangeText}
                         />
                       </Stack>
                     </Box>
-
-                    {/* range price  */}
-                    <Box></Box>
                   </Grid>
 
                   {/* products container  */}
                   <Grid item alignSelf="start" container xs={12} sm={9}>
-                    {allProducts?.data
+                    {mainProductState?.data
                       ?.slice(
                         productStartIndex,
                         productStartIndex + productPerPage
@@ -696,16 +751,34 @@ const App = () => {
 
                 {/* pagination options sections   */}
                 <Grid container sx={{ border: "1px solid yellow" }}>
-                  <Grid item xs={3} sx={{ border: "1px solid salmon" }}>
+                  <Grid
+                    item
+                    xs={3}
+                    sx={{
+                      border: "1px solid salmon",
+                      backgroundColor: "white",
+                    }}
+                  >
                     option 1
                   </Grid>
 
-                  <Grid item xs={6} sx={{ border: "1px solid palegreen" }}>
+                  <Grid
+                    item
+                    xs={6}
+                    sx={{
+                      border: "1px solid palegreen",
+                      backgroundColor: "white",
+                    }}
+                  >
                     <Stack spacing={2} sx={{ py: "10px" }}>
                       <Pagination
-                        count={Math.ceil(
-                          allProducts?.data?.length / productPerPage
-                        )}
+                        count={
+                          mainProductState?.data
+                            ? Math.ceil(
+                                mainProductState?.data?.length / productPerPage
+                              )
+                            : 0
+                        }
                         page={page}
                         onChange={paginationHandler}
                         variant="outlined"
@@ -713,7 +786,14 @@ const App = () => {
                       />
                     </Stack>
                   </Grid>
-                  <Grid item xs={3} sx={{ border: "1px solid palegreen" }}>
+                  <Grid
+                    item
+                    xs={3}
+                    sx={{
+                      border: "1px solid palegreen",
+                      backgroundColor: "white",
+                    }}
+                  >
                     option 3
                   </Grid>
                 </Grid>
