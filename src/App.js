@@ -264,7 +264,7 @@ function App() {
             width: "85%",
             mx: "auto",
             maxWidth: "1500px",
-            mt: "-30px",
+            my: "-30px",
           }}
         >
           {/* feature products  */}
@@ -418,12 +418,7 @@ function App() {
 
           {/* filter and main products   */}
           <Grid container>
-            <Grid
-              item
-              xs={12}
-              sm={3}
-              sx={{ border: "1px solid salmon" }}
-            >
+            <Grid item xs={12} sm={3} sx={{ border: "1px solid salmon" }}>
               {/* category filter  */}
               <Box sx={{ borderBottom: "2px solid blue" }}>
                 <Accordion expanded={expand}>
@@ -605,12 +600,25 @@ function App() {
           </Grid>
 
           {/* pagination options sections   */}
-          <Grid container sx={{ border: "1px solid yellow" }}>
-            <Grid item xs={3} sx={{ border: "1px solid salmon" }}>
+          <Grid
+            container
+            sx={{
+              border: "1px solid yellow",
+            }}
+          >
+            <Grid
+              item
+              xs={3}
+              sx={{ border: "1px solid salmon", backgroundColor: "white" }}
+            >
               option 1
             </Grid>
 
-            <Grid item xs={6} sx={{ border: "1px solid palegreen" }}>
+            <Grid
+              item
+              xs={6}
+              sx={{ border: "1px solid palegreen", backgroundColor: "white" }}
+            >
               <Stack spacing={2} sx={{ py: "10px" }}>
                 <Pagination
                   count={Math.ceil(100 / productPerPage)}
@@ -621,18 +629,28 @@ function App() {
                 />
               </Stack>
             </Grid>
-            <Grid item xs={3} sx={{ border: "1px solid palegreen" }}>
+            <Grid
+              item
+              xs={3}
+              sx={{ border: "1px solid palegreen", backgroundColor: "white" }}
+            >
               option 3
             </Grid>
           </Grid>
         </Box>
 
         {/* news letter  */}
-        <Box sx={{ backgroundColor: "lightgray" }}>
+        <Box
+          sx={{
+            py: "1px",
+            backgroundColor: "lightgray",
+          }}
+        >
           <Box
             sx={{
               width: "85%",
               mx: "auto",
+              mt: "50px",
               maxWidth: "1500px",
               textAlign: "center",
               padding: "30px 10px",
