@@ -71,13 +71,19 @@ const App = () => {
   const [perCategoryProductsError, setPerCategoryProductsError] =
     useState(false);
 
+  console.log(
+    perCategoryProductsLoading,
+    perCategoryProducts,
+    perCategoryProductsError
+  );
+
   const [categoryName, setCategoryName] = useState("all");
 
   const anchorRef = useRef(null);
   const anchorRefUser = useRef(null);
   const anchorRefCount = useRef(null);
   const anchorRefSort = useRef(null);
-  const anchorRefShowProductCount = useRef(null);
+  // const anchorRefShowProductCount = useRef(null);
 
   // fetch all products
   const { allProductsLoading, allProducts, allProductsError } =
@@ -261,6 +267,8 @@ const App = () => {
     }
 
     prevOpenUser.current = openUser;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setOpenUser]);
 
   useEffect(() => {
@@ -269,6 +277,8 @@ const App = () => {
     }
 
     prevOpenCount.current = openCount;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setOpenCount]);
 
   useEffect(() => {
@@ -277,6 +287,7 @@ const App = () => {
     }
 
     prevOpenSort.current = openSort;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setOpenSort]);
 
   // filter category accordion
